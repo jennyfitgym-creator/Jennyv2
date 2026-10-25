@@ -6,6 +6,7 @@
   "background_color": "#000000",
   "theme_color": "#000000",
   "orientation": "portrait",
+  "gcm_sender_id": "492885885548",
   "icons": [
     {
       "src": "Iconojennyfit.png",
