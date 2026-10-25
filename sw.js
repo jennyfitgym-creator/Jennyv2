@@ -13,15 +13,23 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
+// FORZAR ACTUALIZACIÓN DEL SERVICE WORKER
+self.addEventListener('install', (event) => {
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+    event.waitUntil(clients.claim());
+});
+
 messaging.onBackgroundMessage((payload) => {
     console.log('[sw.js] Mensaje recibido:', payload);
     
-    // Si el backend manda un data, lo usamos. Si manda notification, lo leemos de ahí también.
     const title = payload.data?.title || payload.notification?.title || 'Jennyfit';
     const body = payload.data?.body || payload.notification?.body || '';
     
-    // FORZAMOS EL ICONO DE JENNYFIT AQUÍ
-    const iconUrl = 'https://jenny-one-green.vercel.app/Iconojennyfit.jpg'; 
+    // AQUI ESTA TU NUEVA URL Y EL FORMATO .PNG CORREGIDO
+    const iconUrl = 'https://jennyv2.vercel.app/Iconojennyfit.png'; 
 
     const notificationOptions = {
         body: body,
@@ -31,4 +39,22 @@ messaging.onBackgroundMessage((payload) => {
     };
 
     self.registration.showNotification(title, notificationOptions);
+});
+
+// HACER QUE AL TOCAR LA NOTIFICACIÓN SE ABRA LA APP
+self.addEventListener('notificationclick', function(event) {
+    event.notification.close();
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+            for (var i = 0; i < clientList.length; i++) {
+                var client = clientList[i];
+                if (client.url === 'https://jennyv2.vercel.app/' && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            if (clients.openWindow) {
+                return clients.openWindow('https://jennyv2.vercel.app/');
+            }
+        })
+    );
 });
