@@ -20,12 +20,7 @@ export default async function handler(req, res) {
 
     try {
         const message = {
-            // LE DECIMOS A FIREBASE QUE MUESTRE LA NOTIFICACIÓN NATIVAMENTE
-            notification: {
-                title: title,
-                body: body
-            },
-            // Mantenemos la data por si acaso
+            // ELIMINAMOS el bloque 'notification'. Solo enviamos 'data'.
             data: {
                 title: title,
                 body: body
@@ -33,8 +28,6 @@ export default async function handler(req, res) {
             topic: topic
         };
         const response = await admin.messaging().send(message);
-        // AGREGAMOS UN LOG PARA VER EL RESULTADO EN VERCEL
-        console.log('Respuesta de Firebase:', response);
         return res.status(200).json({ success: true, messageId: response });
     } catch (error) {
         console.error('Error al enviar:', error);
