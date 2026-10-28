@@ -20,11 +20,10 @@ export default async function handler(req, res) {
 
     try {
         const message = {
-            // Usamos DATA en lugar de NOTIFICATION para evitar duplicados
+            // Enviamos SOLO data. El Service Worker se encarga de armar la notificación.
             data: {
                 title: title,
-                body: body,
-                icon: 'https://jenny-one-green.vercel.app/Iconojennyfit.jpg'
+                body: body
             },
             topic: topic
         };
