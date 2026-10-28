@@ -3085,6 +3085,43 @@ body.low-energy-theme .btn-finish-day { color: #ffffff; }
   </div>
 </div>
 
+<!-- MODAL MIS RUTINAS PERSONALIZADAS (MVP MEJORADO) -->
+<div id="modal-mis-rutinas" class="modal-overlay" style="display:none;">
+  <div class="modal-box" style="border-color: var(--primary); text-align: left;">
+    <div style="font-size:1.9rem; margin-bottom:2px; text-align:center;">📋</div>
+    <h3 style="margin:0 0 4px; color:var(--primary); font-size:1.15rem; font-weight:900; text-align:center;">Mis Rutinas Personalizadas</h3>
+    <p style="font-size:0.74rem; color:var(--muted); text-align:center; margin:0 0 10px;">Crea tus propias rutinas seleccionando ejercicios y ejecútalos en el orden que elijas.</p>
+
+    <!-- Sección para crear rutina -->
+    <div style="background:var(--card-sub); border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px;">
+      <div style="font-size:0.82rem; font-weight:900; color:var(--primary); margin-bottom:6px;">➕ Crear Nueva Rutina</div>
+      
+      <label style="margin-top:0;">Nombre de la rutina:</label>
+      <input type="text" id="nueva-rutina-nombre" placeholder="Ej: Lunes Empuje" style="font-weight:700;">
+      
+      <label style="margin-top:8px;">Seleccionar Ejercicio:</label>
+      <div style="display:flex; gap:6px;">
+        <select id="nueva-rutina-select-ejercicio" style="flex:1; font-weight:700; padding:8px; margin-top:0;"></select>
+        <button type="button" class="btn-action" style="width:auto; padding:0 12px; margin-top:0;" onclick="agregarEjercicioARutinaEnCreacion()">➕</button>
+      </div>
+
+      <div id="nueva-rutina-lista-ejercicios" style="margin-top:8px; display:flex; flex-direction:column; gap:4px;">
+        <!-- Aquí se renderizan los ejercicios añadidos -->
+      </div>
+
+      <button type="button" class="btn-action" style="margin-top:10px; padding:10px; font-size:0.82rem;" onclick="guardarNuevaRutinaPersonalizada()">💾 Guardar Rutina</button>
+    </div>
+
+    <!-- Sección de rutinas guardadas -->
+    <div style="background:var(--card-sub); border:1px solid var(--border); border-radius:12px; padding:10px;">
+      <div style="font-size:0.82rem; font-weight:900; color:var(--primary); margin-bottom:6px;">📋 Mis Rutinas Guardadas</div>
+      <div id="lista-mis-rutinas-guardadas"></div>
+    </div>
+
+    <button type="button" class="pro-pill-btn" style="width:100%; margin-top:10px; justify-content:center;" onclick="cerrarModalMisRutinas()">Cerrar Ventana</button>
+  </div>
+</div>
+
 <!-- MODAL ADMINISTRADOR SECRETO (CON ENVÍO DE NOTIFICACIONES) -->
 <div id="modal-admin-panel" class="modal-overlay" style="display:none;">
   <div class="modal-box" style="border-color: var(--primary); text-align: left;">
@@ -3304,7 +3341,19 @@ body.low-energy-theme .btn-finish-day { color: #ffffff; }
       <button type="button" class="welcome-close-btn" onclick="cerrarWelcomeBanner()">✕</button>
     </div>
     <p class="welcome-text" id="hevy-welcome-desc">¡Bienvenido a tu app de entrenamiento! Registra tus series de sobrecarga progresiva, lleva el control de tu agua y supera tus marcas personales.</p>
-  </div><!-- 1. ENTRENO (EMPIEZA DIRECTO EN PASO 1 DEBAJO DE PUBLICIDAD + PASO 2 + RULETA FINISHER) -->
+  </div>
+
+  <!-- BANNER DE RESPALDO RECORDATORIO (FASE 1 BLINDAJE) -->
+  <div id="backup-reminder-banner" class="welcome-card" style="display:none; border-left:4px solid var(--gold);">
+    <div class="welcome-card-header">
+      <div class="welcome-title"><span>🛡️</span> Respaldo Recomendado</div>
+      <button type="button" class="welcome-close-btn" onclick="cerrarBannerBackup()">✕</button>
+    </div>
+    <p class="welcome-text">Han pasado más de 15 días desde tu último respaldo y ya tienes más de 3 entrenamientos guardados. Descarga tu copia de seguridad JSON para no perder tu progreso.</p>
+    <button type="button" class="btn-action" style="margin-top:8px; padding:10px; font-size:0.82rem; background:var(--gold); color:#041a0b;" onclick="descargarBackupDesdeBanner()">💾 Descargar Respaldo Ahora</button>
+  </div>
+
+<!-- 1. ENTRENO (EMPIEZA DIRECTO EN PASO 1 DEBAJO DE PUBLICIDAD + PASO 2 + RULETA FINISHER) -->
 <div id="view-entreno">
   <!-- TARJETA FLOTANTE PASO 1: DIRECTO DEBAJO DE LA CABECERA, SIN CARTEL DE GUÍA Y CON BOTÓN RUTINAS JUNTO A +1.100/GIF -->
   <div class="exercise-prompt-wrap" id="exercise-prompt-box">
@@ -3317,6 +3366,7 @@ body.low-energy-theme .btn-finish-day { color: #ffffff; }
         <button type="button" id="btn-ver-tecnica" class="pro-pill-btn" style="display:none; border-color:var(--water); color:var(--water); padding:5px 9px; font-size:0.68rem;" onclick="abrirModalVisorTecnica()">🎥 Técnica</button>
         <button type="button" class="pro-pill-btn" style="padding:5px 9px; font-size:0.68rem;" onclick="abrirModalNuevoEjercicio()">➕ +1.100 / GIF</button>
         <button type="button" class="pro-pill-btn" style="padding:5px 9px; font-size:0.68rem; background:var(--primary-dim);" onclick="abrirModalRutinas()">🧭 Rutinas</button>
+        <button type="button" class="pro-pill-btn" style="padding:5px 9px; font-size:0.68rem; background:var(--primary-dim);" onclick="abrirModalMisRutinas()">📋 Mis Rutinas</button>
       </div>
     </div>
 
@@ -4360,7 +4410,7 @@ body.low-energy-theme .btn-finish-day { color: #ffffff; }
       </div>
     </div>
   </div>
-</div>  <!-- 4. APARTADO DE HIDRATACIÓN -->
+</div><!-- 4. APARTADO DE HIDRATACIÓN -->
   <div id="view-agua" style="display:none;">
     <div class="card" style="border-color: rgba(6, 182, 212, 0.35);">
       <div class="card-title" style="margin-bottom:6px;">
@@ -4686,9 +4736,140 @@ body.low-energy-theme .btn-finish-day { color: #ffffff; }
     </svg>
     <span>Perfil</span>
   </button>
-</nav><script>
-  // --- BLINDAJE DE MEMORIA ---
+</nav>
+
+<script>
+  // --- BLINDAJE DE MEMORIA + ESPEJO INDEXEDDB (FASE 1) ---
   const MEMORIA_RAM_RESPALDO = {};
+  let idbInstance = null;
+  const IDB_NAME = 'JennyfitDatos';
+  const IDB_STORE = 'keyval';
+  const IDB_VERSION = 1;
+
+  function abrirIndexedDB() {
+    return new Promise((resolve) => {
+      if (idbInstance) { resolve(idbInstance); return; }
+      if (!window.indexedDB) { resolve(null); return; }
+      try {
+        const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(IDB_STORE)) { db.createObjectStore(IDB_STORE); }
+        };
+        req.onsuccess = (e) => { idbInstance = e.target.result; resolve(idbInstance); };
+        req.onerror = () => resolve(null);
+        req.onblocked = () => resolve(null);
+      } catch (err) { resolve(null); }
+    });
+  }
+
+  function idbSet(key, val) {
+    return new Promise((resolve) => {
+      abrirIndexedDB().then(db => {
+        if (!db) { resolve(false); return; }
+        try {
+          const tx = db.transaction(IDB_STORE, 'readwrite');
+          tx.objectStore(IDB_STORE).put(val, key);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        } catch (e) { resolve(false); }
+      });
+    });
+  }
+
+  function idbGet(key) {
+    return new Promise((resolve) => {
+      abrirIndexedDB().then(db => {
+        if (!db) { resolve(null); return; }
+        try {
+          const tx = db.transaction(IDB_STORE, 'readonly');
+          const req = tx.objectStore(IDB_STORE).get(key);
+          req.onsuccess = () => resolve(req.result !== undefined ? req.result : null);
+          req.onerror = () => resolve(null);
+        } catch (e) { resolve(null); }
+      });
+    });
+  }
+
+  function idbRemove(key) {
+    return new Promise((resolve) => {
+      abrirIndexedDB().then(db => {
+        if (!db) { resolve(false); return; }
+        try {
+          const tx = db.transaction(IDB_STORE, 'readwrite');
+          tx.objectStore(IDB_STORE).delete(key);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        } catch (e) { resolve(false); }
+      });
+    });
+  }
+
+  function idbGetAll() {
+    return new Promise((resolve) => {
+      abrirIndexedDB().then(db => {
+        if (!db) { resolve({}); return; }
+        try {
+          const tx = db.transaction(IDB_STORE, 'readonly');
+          const store = tx.objectStore(IDB_STORE);
+          const keysReq = store.getAllKeys();
+          const valsReq = store.getAll();
+          let keys = [], vals = [];
+          let listos = 0;
+          const terminar = () => {
+            listos++;
+            if (listos < 2) return;
+            const result = {};
+            keys.forEach((k, i) => { result[k] = vals[i]; });
+            resolve(result);
+          };
+          keysReq.onsuccess = () => { keys = keysReq.result || []; terminar(); };
+          valsReq.onsuccess = () => { vals = valsReq.result || []; terminar(); };
+          keysReq.onerror = () => resolve({});
+          valsReq.onerror = () => resolve({});
+        } catch (e) { resolve({}); }
+      });
+    });
+  }
+
+  function _tamanoValorStorage(v) {
+    if (v === null || v === undefined) return 0;
+    try {
+      const parsed = JSON.parse(v);
+      if (Array.isArray(parsed)) return parsed.length;
+      if (parsed && typeof parsed === 'object') return Object.keys(parsed).length;
+      return String(v).length;
+    } catch (e) { return String(v).length; }
+  }
+
+  async function blindarDatosAlIniciar() {
+    try {
+      const clavesCriticas = ['jennyfit_workouts', 'jennyfit_nutrition', 'jennyfit_body_measures', 'jennyfit_day_modes', 'jennyfit_custom_exercises', 'jennyfit_custom_routines', 'jennyfit_used_tokens'];
+
+      for (const key of clavesCriticas) {
+        const localVal = storageSeguro.getItem(key);
+        const idbVal = await idbGet(key);
+        const localSize = _tamanoValorStorage(localVal);
+        const idbSize = _tamanoValorStorage(idbVal);
+        if (idbSize > localSize) {
+          try { localStorage.setItem(key, String(idbVal)); } catch (e) {}
+        } else if (localSize > 0 && localSize > idbSize) {
+          await idbSet(key, String(localVal));
+        }
+      }
+
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('jennyfit_') && !clavesCriticas.includes(k)) {
+          try {
+            const val = localStorage.getItem(k);
+            if (val !== null) await idbSet(k, String(val));
+          } catch (e) {}
+        }
+      }
+    } catch (e) {}
+  }
+
   const storageSeguro = {
     getItem: function(key) {
       try { return window.localStorage.getItem(key); } 
@@ -4697,10 +4878,12 @@ body.low-energy-theme .btn-finish-day { color: #ffffff; }
     setItem: function(key, val) {
       try { window.localStorage.setItem(key, String(val)); } 
       catch(e) { MEMORIA_RAM_RESPALDO[key] = String(val); }
+      try { idbSet(key, String(val)); } catch(e) {}
     },
     removeItem: function(key) {
       try { return window.localStorage.removeItem(key); } 
       catch(e) { delete MEMORIA_RAM_RESPALDO[key]; }
+      try { idbRemove(key); } catch(e) {}
     }
   };
 
@@ -5984,7 +6167,14 @@ function irAlPaso1() { const box1 = document.getElementById('exercise-prompt-box
 
 function verificarToqueEnPaso2Bloqueado(event) { const setsBox = document.getElementById('sets-section-box'); if (setsBox && setsBox.classList.contains('step2-locked')) { mostrarToast(esModoMaldito() ? `🤬 ¡Primero elige el ejercicio arriba en el Paso 1, ${insultoSexo(1)}!` : "👆 Primero selecciona tu ejercicio arriba en el Paso 1.", esModoMaldito() ? 'maldito' : 'gold', '🔒'); irAlPaso1(); } }
 
-function guardarNotaEjercicioEnVivo() { const ej = document.getElementById('ejercicio-select')?.value; const nota = document.getElementById('ejercicio-nota')?.value || ''; if (!ej) return; const notasMap = JSON.parse(storageSeguro.getItem('jennyfit_exercise_notes') || '{}'); notasMap[ej] = nota; storageSeguro.setItem('jennyfit_exercise_notes', JSON.stringify(notasMap)); }  function cambioEjercicio() {
+function guardarNotaEjercicioEnVivo() { const ej = document.getElementById('ejercicio-select')?.value; const nota = document.getElementById('ejercicio-nota')?.value || ''; if (!ej) return; const notasMap = JSON.parse(storageSeguro.getItem('jennyfit_exercise_notes') || '{}'); notasMap[ej] = nota; storageSeguro.setItem('jennyfit_exercise_notes', JSON.stringify(notasMap)); }let isSavingWorkout = false;
+let rutinaActivaIdx = -1;
+let rutinaActivaNombre = '';
+let rutinaActivaEjercicios = [];
+let rutinaActivaPosicion = 0;
+let ejerciciosNuevaRutina = []; // Variable global para guardar los ejercicios que se van añadiendo a la nueva rutina
+
+function cambioEjercicio() {
     const select = document.getElementById('ejercicio-select'); const promptBox = document.getElementById('exercise-prompt-box'); const btnTecnica = document.getElementById('btn-ver-tecnica'); const setsBox = document.getElementById('sets-section-box'); const container = document.getElementById('sets-container'); const intensityCard = document.getElementById('intensity-alert'); const intensityTitle = document.getElementById('intensity-alert-title-txt'); const intensityBody = document.getElementById('intensity-alert-body-txt'); const overloadBanner = document.getElementById('overload-target-banner'); const warmupBanner = document.getElementById('mandatory-warmup-banner'); const liveCoachBanner = document.getElementById('live-weight-coach-banner'); const colRepsLabel = document.getElementById('col-reps-label'); const bestMarkEl = document.getElementById('best-mark'); const notaInput = document.getElementById('ejercicio-nota');
     if (!select || !container) return; const ej = select.value; ejercicioActualYaGuardado = false; if (liveCoachBanner) liveCoachBanner.style.display = 'none'; actualizarRecomendacionPorEdadUI();
     if (!ej) {
@@ -6080,21 +6270,249 @@ function guardarNotaEjercicioEnVivo() { const ej = document.getElementById('ejer
   function registrarModoDeLaFecha(fechaISO) { if (!fechaISO) return; const modoActual = esModoMaldito() ? 'maldito' : (esModoBajaEnergia() ? 'baja' : 'normal'); const mapaModos = JSON.parse(storageSeguro.getItem('jennyfit_day_modes') || '{}'); mapaModos[fechaISO] = modoActual; storageSeguro.setItem('jennyfit_day_modes', JSON.stringify(mapaModos)); }
 
   function recolectarYGuardarEjercicioActual(mostrarNotif = true) {
-    const ej = document.getElementById('ejercicio-select')?.value; const container = document.getElementById('sets-container'); if (!ej || !container) return false; const filas = Array.from(container.querySelectorAll('.set-row')); const filasMarcadas = filas.filter(r => r.querySelector('.btn-check')?.classList.contains('checked')); if (filasMarcadas.length === 0) return false;
-    for (const row of filasMarcadas) { if (!validarRealismoBiometricoFila(row)) return false; }
-    const obligatorias = filas.filter(r => r.getAttribute('data-mandatory-warmup') === 'true');
-    for (const ob of obligatorias) { if (!ob.querySelector('.btn-check')?.classList.contains('checked')) { mostrarToast("🔥 Debes completar y marcar (✓) las 2 series obligatorias de calentamiento (C1 y C2).", 'gold', '⚠️'); return false; } }
-    const seriesGuardar = filasMarcadas.map((r, i) => ({ set: i + 1, tipo: r.querySelector('.set-badge')?.getAttribute('data-set-type') || 'N', peso: parseFloat(r.querySelector('.input-peso').value) || 0, reps: parseInt(r.querySelector('.input-reps').value) || 0 }));
-    const fechaISO = document.getElementById('entreno-fecha')?.value || aFormatoISODia(new Date()); const partes = fechaISO.split('-'); const fechaFormateada = partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fechaISO; const nota = document.getElementById('ejercicio-nota')?.value.trim() || ''; const modoSesion = esModoMaldito() ? 'maldito' : (esModoBajaEnergia() ? 'baja' : 'normal');
-    let historial = JSON.parse(storageSeguro.getItem('jennyfit_workouts') || '[]'); let maxPrevio = 0; historial.filter(h => h.ejercicio === ej).forEach(h => { (h.series || []).forEach(s => { if (s.tipo !== 'C' && parseFloat(s.peso) > maxPrevio) maxPrevio = parseFloat(s.peso); }); }); const maxHoy = Math.max(...seriesGuardar.filter(s => s.tipo !== 'C').map(s => s.peso), 0); const esNuevoPR = maxHoy > maxPrevio && maxHoy > 0;
-    historial.push({ id: Date.now() + Math.floor(Math.random() * 1000), atleta: storageSeguro.getItem('jennyfit_username') || 'Atleta', fecha: fechaFormateada, fechaRaw: fechaISO, ejercicio: ej, musculo: obtenerGrupoMuscularSeguro(ej), series: seriesGuardar, nota: nota, esPR: esNuevoPR, modo: modoSesion });
-    storageSeguro.setItem('jennyfit_workouts', JSON.stringify(historial)); registrarModoDeLaFecha(fechaISO); ejerciciosGuardadosEnSesionActual++; ejercicioActualYaGuardado = true; actualizarSelectoresHistorial(); renderizarHistorialEntrenos(); actualizarRachas(); actualizarDistribucionCuerpo();
-    if (mostrarNotif) { if (esNuevoPR) { mostrarToast(`🏆 ¡NUEVO RÉCORD PERSONAL EN ${ej.toUpperCase()} (${maxHoy} kg)!`, 'gold', '🏆'); } else { mostrarToast(`✅ "${ej}" guardado (${seriesGuardar.length} series).`, 'normal', '💾'); } }
-    return true;
+    if (isSavingWorkout) return false;
+    isSavingWorkout = true;
+    try {
+      const ej = document.getElementById('ejercicio-select')?.value; const container = document.getElementById('sets-container'); if (!ej || !container) return false; const filas = Array.from(container.querySelectorAll('.set-row')); const filasMarcadas = filas.filter(r => r.querySelector('.btn-check')?.classList.contains('checked')); if (filasMarcadas.length === 0) return false;
+      for (const row of filasMarcadas) { if (!validarRealismoBiometricoFila(row)) return false; }
+      const obligatorias = filas.filter(r => r.getAttribute('data-mandatory-warmup') === 'true');
+      for (const ob of obligatorias) { if (!ob.querySelector('.btn-check')?.classList.contains('checked')) { mostrarToast("🔥 Debes completar y marcar (✓) las 2 series obligatorias de calentamiento (C1 y C2).", 'gold', '⚠️'); return false; } }
+      const seriesGuardar = filasMarcadas.map((r, i) => ({ set: i + 1, tipo: r.querySelector('.set-badge')?.getAttribute('data-set-type') || 'N', peso: parseFloat(r.querySelector('.input-peso').value) || 0, reps: parseInt(r.querySelector('.input-reps').value) || 0 }));
+      const fechaISO = document.getElementById('entreno-fecha')?.value || aFormatoISODia(new Date()); const partes = fechaISO.split('-'); const fechaFormateada = partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fechaISO; const nota = document.getElementById('ejercicio-nota')?.value.trim() || ''; const modoSesion = esModoMaldito() ? 'maldito' : (esModoBajaEnergia() ? 'baja' : 'normal');
+      let historial = JSON.parse(storageSeguro.getItem('jennyfit_workouts') || '[]'); let maxPrevio = 0; historial.filter(h => h.ejercicio === ej).forEach(h => { (h.series || []).forEach(s => { if (s.tipo !== 'C' && parseFloat(s.peso) > maxPrevio) maxPrevio = parseFloat(s.peso); }); }); const maxHoy = Math.max(...seriesGuardar.filter(s => s.tipo !== 'C').map(s => s.peso), 0); const esNuevoPR = maxHoy > maxPrevio && maxHoy > 0;
+      historial.push({ id: Date.now() + Math.floor(Math.random() * 1000), atleta: storageSeguro.getItem('jennyfit_username') || 'Atleta', fecha: fechaFormateada, fechaRaw: fechaISO, ejercicio: ej, musculo: obtenerGrupoMuscularSeguro(ej), series: seriesGuardar, nota: nota, esPR: esNuevoPR, modo: modoSesion });
+      storageSeguro.setItem('jennyfit_workouts', JSON.stringify(historial)); registrarModoDeLaFecha(fechaISO); ejerciciosGuardadosEnSesionActual++; ejercicioActualYaGuardado = true; actualizarSelectoresHistorial(); renderizarHistorialEntrenos(); actualizarRachas(); actualizarDistribucionCuerpo();
+      if (mostrarNotif) { if (esNuevoPR) { mostrarToast(`🏆 ¡NUEVO RÉCORD PERSONAL EN ${ej.toUpperCase()} (${maxHoy} kg)!`, 'gold', '🏆'); } else { mostrarToast(`✅ "${ej}" guardado (${seriesGuardar.length} series).`, 'normal', '💾'); } }
+      return true;
+    } finally {
+      isSavingWorkout = false;
+    }
   }
 
-  function guardarEntrenamientoCompleto() { if (!verificarLicenciaMembresia()) return; if (recolectarYGuardarEjercicioActual(true)) { verificarEstadoBotonFinalizarDia(); } }
-  function agregarOtroEjercicioASesion() { if (!verificarLicenciaMembresia()) return; if (!ejercicioActualYaGuardado) { const ok = recolectarYGuardarEjercicioActual(true); if (!ok) return; } const sel = document.getElementById('ejercicio-select'); if (sel) { sel.value = ''; cambioEjercicio(); } irAlPaso1(); }
+  function guardarEntrenamientoCompleto() { 
+    if (!verificarLicenciaMembresia()) return; 
+    if (isSavingWorkout) return;
+    const btn = document.getElementById('btn-guardar-ejercicio');
+    if (btn) { btn.disabled = true; btn.dataset.origTxt = btn.innerText; btn.innerText = "⏳ Guardando..."; }
+    try {
+      if (recolectarYGuardarEjercicioActual(true)) { verificarEstadoBotonFinalizarDia(); }
+    } finally {
+      if (btn) { verificarEstadoBotonesAccionEntreno(); }
+    }
+  }
+
+  function agregarOtroEjercicioASesion() { 
+    if (!verificarLicenciaMembresia()) return; 
+    if (isSavingWorkout) return;
+    if (!ejercicioActualYaGuardado) { 
+      const ok = recolectarYGuardarEjercicioActual(true); 
+      if (!ok) return; 
+    } 
+    
+    // Si hay una rutina activa, cargar el siguiente ejercicio
+    if (rutinaActivaIdx >= 0) {
+      const cargado = cargarSiguienteEjercicioDeRutina();
+      if (cargado) {
+        mostrarToast(`➡️ Siguiente en rutina "${rutinaActivaNombre}": ${rutinaActivaEjercicios[rutinaActivaPosicion - 1]}`, 'normal', '📋');
+        irAlPaso1();
+        return;
+      } else {
+        const nombreRutinaCompletada = rutinaActivaNombre;
+        mostrarToast(`🎉 ¡Rutina "${nombreRutinaCompletada}" completada!`, 'normal', '🏆');
+        rutinaActivaIdx = -1;
+        rutinaActivaNombre = '';
+        rutinaActivaEjercicios = [];
+        rutinaActivaPosicion = 0;
+      }
+    }
+    
+    // Si no hay rutina o se terminó, limpiar el selector
+    const sel = document.getElementById('ejercicio-select'); 
+    if (sel) { sel.value = ''; cambioEjercicio(); } 
+    irAlPaso1(); 
+  }
+
+  // === MIS RUTINAS PERSONALIZADAS (MVP MEJORADO) ===
+  function abrirModalMisRutinas() {
+    ejerciciosNuevaRutina = [];
+    const nombreInput = document.getElementById('nueva-rutina-nombre');
+    if (nombreInput) nombreInput.value = '';
+    
+    // Poblar el select con todos los ejercicios del selector original
+    const selectDestino = document.getElementById('nueva-rutina-select-ejercicio');
+    const selectOrigen = document.getElementById('ejercicio-select');
+    if (selectDestino && selectOrigen) {
+      selectDestino.innerHTML = '<option value="">Selecciona un ejercicio...</option>';
+      Array.from(selectOrigen.children).forEach(child => {
+        if (child.tagName === 'OPTGROUP') {
+          const group = document.createElement('optgroup');
+          group.label = child.label;
+          Array.from(child.children).forEach(opt => {
+            const newOpt = document.createElement('option');
+            newOpt.value = opt.value;
+            newOpt.innerText = opt.innerText;
+            group.appendChild(newOpt);
+          });
+          selectDestino.appendChild(group);
+        } else if (child.tagName === 'OPTION' && child.value !== '') {
+          const newOpt = document.createElement('option');
+          newOpt.value = child.value;
+          newOpt.innerText = child.innerText;
+          selectDestino.appendChild(newOpt);
+        }
+      });
+    }
+
+    renderizarListaRutinaEnCreacion();
+    renderizarListaMisRutinas();
+    const modal = document.getElementById('modal-mis-rutinas');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function cerrarModalMisRutinas() {
+    const modal = document.getElementById('modal-mis-rutinas');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function agregarEjercicioARutinaEnCreacion() {
+    const sel = document.getElementById('nueva-rutina-select-ejercicio');
+    if (!sel || !sel.value) return;
+    const ejNombre = sel.value;
+    if (!ejerciciosNuevaRutina.includes(ejNombre)) {
+      ejerciciosNuevaRutina.push(ejNombre);
+      renderizarListaRutinaEnCreacion();
+      mostrarToast(`➕ "${ejNombre}" añadido a la rutina.`, 'normal', '📋');
+    } else {
+      mostrarToast(`⚠️ "${ejNombre}" ya está en la lista.`, 'gold', '⚠️');
+    }
+    sel.value = ''; // Resetear select
+  }
+
+  function eliminarEjercicioDeRutinaEnCreacion(idx) {
+    if (idx >= 0 && idx < ejerciciosNuevaRutina.length) {
+      ejerciciosNuevaRutina.splice(idx, 1);
+      renderizarListaRutinaEnCreacion();
+    }
+  }
+
+  function renderizarListaRutinaEnCreacion() {
+    const cont = document.getElementById('nueva-rutina-lista-ejercicios');
+    if (!cont) return;
+    if (ejerciciosNuevaRutina.length === 0) {
+      cont.innerHTML = '<div style="font-size:0.7rem; color:var(--muted); text-align:center; padding:4px;">Añade ejercicios usando el botón ➕</div>';
+      return;
+    }
+    cont.innerHTML = '';
+    ejerciciosNuevaRutina.forEach((ej, idx) => {
+      const div = document.createElement('div');
+      div.className = 'custom-ex-item';
+      div.style.padding = '6px 8px';
+      div.innerHTML = `<span style="font-size:0.75rem;">${idx + 1}. ${ej}</span><button type="button" class="btn-remove-set" style="color:var(--danger); font-size:0.9rem;" onclick="eliminarEjercicioDeRutinaEnCreacion(${idx})">✕</button>`;
+      cont.appendChild(div);
+    });
+  }
+
+  function guardarNuevaRutinaPersonalizada() {
+    const nombre = document.getElementById('nueva-rutina-nombre')?.value.trim();
+    if (!nombre) { mostrarToast("Escribe un nombre para la rutina.", 'gold', '⚠️'); return; }
+    if (ejerciciosNuevaRutina.length === 0) { mostrarToast("Añade al menos un ejercicio.", 'gold', '⚠️'); return; }
+    
+    const rutinas = JSON.parse(storageSeguro.getItem('jennyfit_custom_routines') || '[]');
+    rutinas.push({ id: Date.now(), nombre, ejercicios: ejerciciosNuevaRutina.slice() });
+    storageSeguro.setItem('jennyfit_custom_routines', JSON.stringify(rutinas));
+    
+    document.getElementById('nueva-rutina-nombre').value = '';
+    ejerciciosNuevaRutina = [];
+    renderizarListaRutinaEnCreacion();
+    renderizarListaMisRutinas();
+    mostrarToast(`📋 Rutina "${nombre}" guardada (${rutinas[rutinas.length-1].ejercicios.length} ejercicios).`, 'normal', '✅');
+  }
+
+  function renderizarListaMisRutinas() {
+    const cont = document.getElementById('lista-mis-rutinas-guardadas');
+    if (!cont) return;
+    const rutinas = JSON.parse(storageSeguro.getItem('jennyfit_custom_routines') || '[]');
+    if (rutinas.length === 0) {
+      cont.innerHTML = '<div style="font-size:0.75rem; color:var(--muted); text-align:center;">Aún no tienes rutinas guardadas.</div>';
+      return;
+    }
+    cont.innerHTML = '';
+    rutinas.forEach((r, idx) => {
+      const div = document.createElement('div');
+      div.className = 'custom-ex-item';
+      div.style.flexDirection = 'column';
+      div.style.alignItems = 'stretch';
+      div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+        <span>📋 <b>${r.nombre}</b> <small style="color:var(--muted);">(${r.ejercicios.length} ejercicios)</small></span>
+        <div style="display:flex; gap:4px;">
+          <button type="button" class="pro-pill-btn" style="padding:5px 8px; font-size:0.66rem;" onclick="iniciarRutinaPersonalizada(${idx})">▶️ Empezar</button>
+          <button type="button" class="custom-ex-del-btn" onclick="eliminarRutinaPersonalizada(${idx})">🗑️</button>
+        </div>
+      </div>
+      <div style="font-size:0.7rem; color:var(--muted); margin-top:4px;">${r.ejercicios.join(' • ')}</div>`;
+      cont.appendChild(div);
+    });
+  }
+
+  function eliminarRutinaPersonalizada(idx) {
+    let rutinas = JSON.parse(storageSeguro.getItem('jennyfit_custom_routines') || '[]');
+    if (idx < 0 || idx >= rutinas.length) return;
+    const borrada = rutinas.splice(idx, 1)[0];
+    storageSeguro.setItem('jennyfit_custom_routines', JSON.stringify(rutinas));
+    renderizarListaMisRutinas();
+    mostrarToast(`🗑️ Rutina "${borrada.nombre}" eliminada.`, 'normal', '🗑️');
+  }
+
+  function iniciarRutinaPersonalizada(idx) {
+    const rutinas = JSON.parse(storageSeguro.getItem('jennyfit_custom_routines') || '[]');
+    const rutina = rutinas[idx];
+    if (!rutina || !rutina.ejercicios || rutina.ejercicios.length === 0) return;
+    
+    rutinaActivaIdx = idx;
+    rutinaActivaNombre = rutina.nombre;
+    rutinaActivaEjercicios = rutina.ejercicios.slice();
+    rutinaActivaPosicion = 0;
+    
+    cerrarModalMisRutinas();
+    
+    const ok = cargarSiguienteEjercicioDeRutina();
+    if (ok) {
+      mostrarToast(`📋 Rutina "${rutina.nombre}" iniciada (${rutina.ejercicios.length} ejercicios).`, 'normal', '▶️');
+      irAlPaso1();
+    }
+  }
+
+  function cargarSiguienteEjercicioDeRutina() {
+    if (rutinaActivaIdx < 0 || rutinaActivaPosicion >= rutinaActivaEjercicios.length) return false;
+    const ejNombre = rutinaActivaEjercicios[rutinaActivaPosicion];
+    const sel = document.getElementById('ejercicio-select');
+    if (!sel) return false;
+    
+    let existe = false;
+    for (let i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === ejNombre) { existe = true; break; }
+    }
+    
+    if (!existe) {
+      // Intentar importar si no existe en el selector actual
+      const todos = [...CATALOGO_EXTRA_REPOSITORIO_GIF, ...REPOSITORIO_GLOBAL_EJERCICIOS];
+      const match = todos.find(x => x.nombre.toLowerCase().includes(ejNombre.toLowerCase()) || ejNombre.toLowerCase().includes(x.nombre.toLowerCase()));
+      if (match) {
+        importarYSeleccionarEjercicioConGif(match);
+        sel.value = match.nombre;
+      } else {
+        mostrarToast(`⚠️ "${ejNombre}" no está en el catálogo. Añádelo manualmente.`, 'gold', '⚠️');
+        rutinaActivaPosicion++;
+        return false;
+      }
+    } else {
+      sel.value = ejNombre;
+    }
+    
+    cambioEjercicio();
+    rutinaActivaPosicion++;
+    return true;
+  }
 
   function finalizarDiaEntrenamiento() {
     if (!verificarLicenciaMembresia()) return;
@@ -6112,7 +6530,13 @@ function guardarNotaEjercicioEnVivo() { const ej = document.getElementById('ejer
     reproducirSonidoAlarma('olimpico'); if (modal) modal.style.display = 'flex';
   }
 
-  function cerrarModalFinDia() { const modal = document.getElementById('modal-fin-dia'); if (modal) modal.style.display = 'none'; const sel = document.getElementById('ejercicio-select'); if (sel) { sel.value = ''; cambioEjercicio(); } }
+  function cerrarModalFinDia() { const modal = document.getElementById('modal-fin-dia'); if (modal) modal.style.display = 'none'; const sel = document.getElementById('ejercicio-select'); if (sel) { sel.value = ''; cambioEjercicio(); } 
+    // Resetear estado de rutina si se finaliza el día
+    rutinaActivaIdx = -1;
+    rutinaActivaNombre = '';
+    rutinaActivaEjercicios = [];
+    rutinaActivaPosicion = 0;
+  }
 
   function obtenerSectoresRuleta() {
     const maldito = esModoMaldito();
@@ -6576,9 +7000,45 @@ function guardarNotaEjercicioEnVivo() { const ej = document.getElementById('ejer
 
   async function compartirPosterDirectoWhatsApp() { const blob = await generarImagenHistoriaEntreno(true); const nombre = storageSeguro.getItem('jennyfit_username') || 'Atleta'; const fechaISO = document.getElementById('entreno-fecha')?.value || aFormatoISODia(new Date()); const textoShare = `💪 ¡Entrenamiento completado hoy (${fechaISO}) en Jennyfit por ${nombre}! 🔥 @jennyfit.ve`; if (blob && navigator.canShare) { const file = new File([blob], `Jennyfit_${fechaISO}.jpg`, { type: 'image/jpeg' }); if (navigator.canShare({ files: [file] })) { try { await navigator.share({ title: 'Entrenamiento Jennyfit', text: textoShare, files: [file] }); return; } catch (e) {} } } await generarImagenHistoriaEntreno(false); window.open(`https://wa.me/?text=${encodeURIComponent(textoShare)}`, '_blank'); }
 
-  function exportarBackupJSON() { const clavesRespaldo = ['jennyfit_username', 'jennyfit_user_sexo', 'jennyfit_user_edad', 'jennyfit_user_peso', 'jennyfit_user_estatura', 'jennyfit_user_cedula', 'jennyfit_user_telf', 'jennyfit_user_avatar', 'jennyfit_workouts', 'jennyfit_day_modes', 'jennyfit_custom_exercises', 'jennyfit_exercise_notes', 'jennyfit_nutrition', 'jennyfit_meta_kcal', 'jennyfit_meta_prot', 'jennyfit_water', 'jennyfit_water_goal', 'jennyfit_water_date', 'jennyfit_body_measures', 'jennyfit_weekly_goal', 'jennyfit_rest_time', 'jennyfit_bio_clock', 'jennyfit_alarm_tone', 'jennyfit_app_muted', 'jennyfit_modo_maldito', 'jennyfit_low_energy', 'jennyfit_roulette_spun_date', 'jennyfit_notif_news_active']; const dataObj = { version: "Jennyfit_Universal_2026", timestamp: Date.now(), payload: {} }; clavesRespaldo.forEach(k => { const val = storageSeguro.getItem(k); if (val !== null) dataObj.payload[k] = val; }); const blob = new Blob([JSON.stringify(dataObj, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); const fechaHoy = aFormatoISODia(new Date()); a.href = url; a.download = `Respaldo_Jennyfit_${fechaHoy}.json`; a.click(); URL.revokeObjectURL(url); mostrarToast("💾 Copia de seguridad descargada con éxito.", 'normal', '✅'); }
+  function exportarBackupJSON() { 
+    const clavesRespaldo = ['jennyfit_username', 'jennyfit_user_sexo', 'jennyfit_user_edad', 'jennyfit_user_peso', 'jennyfit_user_estatura', 'jennyfit_user_cedula', 'jennyfit_user_telf', 'jennyfit_user_avatar', 'jennyfit_workouts', 'jennyfit_day_modes', 'jennyfit_custom_exercises', 'jennyfit_custom_routines', 'jennyfit_exercise_notes', 'jennyfit_nutrition', 'jennyfit_meta_kcal', 'jennyfit_meta_prot', 'jennyfit_water', 'jennyfit_water_goal', 'jennyfit_water_date', 'jennyfit_body_measures', 'jennyfit_weekly_goal', 'jennyfit_rest_time', 'jennyfit_bio_clock', 'jennyfit_alarm_tone', 'jennyfit_app_muted', 'jennyfit_modo_maldito', 'jennyfit_low_energy', 'jennyfit_roulette_spun_date', 'jennyfit_notif_news_active', 'jennyfit_last_backup_ms']; 
+    const dataObj = { version: "Jennyfit_Universal_2026", timestamp: Date.now(), payload: {} }; 
+    clavesRespaldo.forEach(k => { const val = storageSeguro.getItem(k); if (val !== null) dataObj.payload[k] = val; }); 
+    const blob = new Blob([JSON.stringify(dataObj, null, 2)], { type: 'application/json' }); 
+    const url = URL.createObjectURL(blob); 
+    const a = document.createElement('a'); 
+    const fechaHoy = aFormatoISODia(new Date()); 
+    a.href = url; 
+    a.download = `Respaldo_Jennyfit_${fechaHoy}.json`; 
+    a.click(); 
+    URL.revokeObjectURL(url); 
+    storageSeguro.setItem('jennyfit_last_backup_ms', String(Date.now()));
+    mostrarToast("💾 Copia de seguridad descargada con éxito.", 'normal', '✅'); 
+  }
 
   function importarBackupJSON(event) { const file = event.target?.files?.[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(ev) { try { const parsed = JSON.parse(ev.target.result); const source = parsed.payload || parsed; Object.keys(source).forEach(k => { if (k.startsWith('jennyfit_') && source[k] !== undefined && source[k] !== null) storageSeguro.setItem(k, source[k]); }); modoRelojBiologico = storageSeguro.getItem('jennyfit_bio_clock') === 'true'; tiempoBaseDescanso = parseInt(storageSeguro.getItem('jennyfit_rest_time') || '90'); actualizarEtiquetaDescansoUI(); aplicarTemaInicial(); cargarPerfilUsuario(storageSeguro.getItem('jennyfit_username') || 'Atleta'); cargarEjerciciosPersonalizados(); actualizarSelectoresHistorial(); renderizarHistorialEntrenos(); renderizarGrafico(); actualizarRachas(); renderizarHistorialNutricion(); renderizarAgua(); actualizarDistribucionCuerpo(); renderizarHistorialMedidas(); actualizarBotonMuteGlobalUI(); if (typeof actualizarEstadoUINoticiasGenerales === 'function') actualizarEstadoUINoticiasGenerales(); mostrarToast("📂 ¡Copia de seguridad restaurada correctamente!", 'normal', '✅'); } catch (err) { mostrarToast("❌ El archivo seleccionado no es un respaldo válido.", 'danger', '❌'); } }; reader.readAsText(file); }
+
+  function verificarMostrarBannerBackup() {
+    try {
+      const banner = document.getElementById('backup-reminder-banner');
+      if (!banner) return;
+      const historial = JSON.parse(storageSeguro.getItem('jennyfit_workouts') || '[]');
+      if (historial.length < 3) { banner.style.display = 'none'; return; }
+      const lastBackup = parseInt(storageSeguro.getItem('jennyfit_last_backup_ms') || '0');
+      const lastShown = parseInt(storageSeguro.getItem('jennyfit_backup_banner_shown_ms') || '0');
+      const ahora = Date.now();
+      const QUINCE_DIAS = 15 * 24 * 60 * 60 * 1000;
+      const debeMostrar = (ahora - lastBackup > QUINCE_DIAS) && (ahora - lastShown > QUINCE_DIAS);
+      if (debeMostrar) {
+        banner.style.display = 'flex';
+        storageSeguro.setItem('jennyfit_backup_banner_shown_ms', String(ahora));
+      } else {
+        banner.style.display = 'none';
+      }
+    } catch(e) {}
+  }
+  function cerrarBannerBackup() { const b = document.getElementById('backup-reminder-banner'); if (b) b.style.display = 'none'; }
+  function descargarBackupDesdeBanner() { exportarBackupJSON(); cerrarBannerBackup(); }
 
   function navegar(vista) { if (vista === 'explorar') { navegar('nutri'); switchNutriPanel('ciencia'); return; } if (typeof limpiarCabecerasDuplicadasDOM === 'function') limpiarCabecerasDuplicadasDOM(); const vistas = ['entreno', 'historial', 'nutri', 'agua', 'perfil']; vistas.forEach(v => { const el = document.getElementById(`view-${v}`); if (el) el.style.display = (v === vista) ? 'block' : 'none'; }); document.body.classList.toggle('secondary-tab-active', vista !== 'entreno'); ['historial', 'nutri', 'agua', 'perfil'].forEach(v => { const btn = document.getElementById(`nav-btn-${v}`); if (btn) btn.classList.toggle('active', v === vista); }); const wrapEntreno = document.getElementById('nav-wrap-entreno'); const fabEntreno = document.getElementById('nav-btn-entreno'); if (wrapEntreno) wrapEntreno.classList.toggle('active', vista === 'entreno'); if (fabEntreno) fabEntreno.classList.toggle('active', vista === 'entreno'); if (vista === 'historial') { actualizarSelectoresHistorial(); renderizarHistorialEntrenos(); renderizarGrafico(); actualizarRachas(); actualizarDistribucionCuerpo(); } else if (vista === 'nutri') { actualizarTextosExplorarModoMaldito(); renderizarHistorialNutricion(); renderizarPlanSemanalNutricion(); actualizarUIContadorPasos(); } else if (vista === 'agua') { renderizarAgua(); actualizarEstadoUIRecordatoriosAgua(); } else if (vista === 'perfil') { cargarAvatarPerfilGuardado(); actualizarRecomendacionPorEdadUI(); actualizarBadgeEstadoPrivacidad(); renderizarHistorialMedidas(); actualizarBotonMuteGlobalUI(); if (typeof actualizarEstadoUINoticiasGenerales === 'function') actualizarEstadoUINoticiasGenerales(); } else if (vista === 'entreno') { dibujarRuletaFinisher(); verificarEstadoBotonFinalizarDia(); } repararTextoCorruptoUTF8(); setTimeout(() => { document.documentElement.scrollTop = 0; document.body.scrollTop = 0; window.scrollTo(0, 0); }, 10); }
 
@@ -6592,11 +7052,20 @@ function guardarNotaEjercicioEnVivo() { const ej = document.getElementById('ejer
     renderizarHistorialNutricion(); renderizarPlanSemanalNutricion(); aplicarPresetHorasAyuno(presetHorasAyunoSeleccionado); iniciarMonitoreoRelojAyuno();
     renderizarAgua(); actualizarEstadoUIRecordatoriosAgua(); actualizarEstadoUINoticiasGenerales(); iniciarLoopNotificacionesAgua();
     actualizarDistribucionCuerpo(); renderizarHistorialMedidas(); inicializarCarruselPublicidadSheets(); verificarInasistenciaMotivacional();
+    verificarMostrarBannerBackup();
     setTimeout(() => { if (typeof limpiarCabecerasDuplicadasDOM === 'function') limpiarCabecerasDuplicadasDOM(); repararTextoCorruptoUTF8(); }, 400);
     setInterval(monitorearAyunoYNotificar6h, 60000);
   }
 
-  window.addEventListener('DOMContentLoaded', inicializarAppJennyfit);
+  window.addEventListener('DOMContentLoaded', async () => {
+    try {
+      await Promise.race([
+        blindarDatosAlIniciar(),
+        new Promise(r => setTimeout(r, 2000))
+      ]);
+    } catch (e) {}
+    inicializarAppJennyfit();
+  });
 </script>
 </body>
 </html>
