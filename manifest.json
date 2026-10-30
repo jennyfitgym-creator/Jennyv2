@@ -1,12 +1,10 @@
 {
-  "name": "Jennyfit Workout & Nutrition",
+  "name": "Jennyfit Entrenamiento",
   "short_name": "Jennyfit",
-  "start_url": "index.html",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
-  "orientation": "portrait",
-  "gcm_sender_id": "492885885548",
+  "background_color": "#0b0d0c",
+  "theme_color": "#0b0d0c",
   "icons": [
     {
       "src": "Iconojennyfit.png",
@@ -18,7 +16,7 @@
       "src": "Iconojennyfit.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "maskable"
     }
   ]
 }
