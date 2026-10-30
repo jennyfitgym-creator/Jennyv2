@@ -1,9 +1,11 @@
 {
   "name": "Jennyfit Entrenamiento",
   "short_name": "Jennyfit",
+  "description": "App de entrenamiento y nutrición.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0b0d0c",
   "theme_color": "#0b0d0c",
   "icons": [
