@@ -28,20 +28,20 @@ export default async function handler(req, res) {
     if (!title || !body || !topic) return res.status(400).json({ success: false, error: 'Faltan campos obligatorios' });
 
     try {
-        // 🚨 ESTRUCTURA OFICIAL PARA IMÁGENES EN ANDROID 🚨
+        // 🚨 ESTRUCTURA NATIVA: El servidor manda la orden visual
         const message = {
             topic: topic,
-            data: {
+            notification: {
                 title: title,
                 body: body,
-                image: image || ''
+                image: image || '' 
             },
             webpush: {
                 notification: {
                     title: title,
                     body: body,
                     icon: './Iconojennyfit.png',
-                    image: image || '' // Aquí forzamos a Android a mostrar la imagen
+                    image: image || '' 
                 }
             }
         };
