@@ -1,4 +1,5 @@
-// 🚨 EVITA EL AVISO DE ACTUALIZACIÓN EN SEGUNDO PLANO
+// 🚨 FORZAMOS LA ACTUALIZACIÓN INMEDIATA DEL SERVICE WORKER 🚨
+const SW_VERSION = '1.0.1'; // Cambiar este número obliga al teléfono a borrar el viejo
 self.addEventListener('install', (event) => { self.skipWaiting(); });
 self.addEventListener('activate', (event) => { event.waitUntil(clients.claim()); });
 
@@ -16,13 +17,12 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// 🚨 AQUÍ ESTÁ EL TRUCO: YA NO DIBUJAMOS LA NOTIFICACIÓN MANUALMENTE
-// Dejamos que Firebase (el servidor de Google) lo haga para que no salga doble.
+// 🚨 NO DIBUJAMOS LA NOTIFICACIÓN MANUALMENTE. 
+// El servidor de Google ya lo hace con el bloque "notification" de arriba.
 messaging.onBackgroundMessage((payload) => {
-  console.log('Notificación recibida en segundo plano, el servidor la mostrará.');
+  console.log('Notificación recibida en segundo plano. El servidor la muestra.');
 });
 
-// Manejar el clic en la notificación para abrir la app
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
   event.waitUntil(
@@ -38,7 +38,4 @@ self.addEventListener('notificationclick', function(event) {
   );
 });
 
-// Manejador obligatorio para PWA
-self.addEventListener('fetch', function(event) {
-  // Manejador vacío
-});
+self.addEventListener('fetch', function(event) {});
