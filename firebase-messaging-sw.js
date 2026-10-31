@@ -1,4 +1,4 @@
-// 🚨 ESTO EVITA EL AVISO DE "ACTUALIZADO EN SEGUNDO PLANO"
+// 🚨 EVITA EL AVISO DE ACTUALIZACIÓN EN SEGUNDO PLANO
 self.addEventListener('install', (event) => { self.skipWaiting(); });
 self.addEventListener('activate', (event) => { event.waitUntil(clients.claim()); });
 
@@ -16,21 +16,13 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// 🚨 AQUÍ ESTÁ EL TRUCO: YA NO DIBUJAMOS LA NOTIFICACIÓN MANUALMENTE
+// Dejamos que Firebase (el servidor de Google) lo haga para que no salga doble.
 messaging.onBackgroundMessage((payload) => {
-  const notificationTitle = payload.data?.title || payload.notification?.title || 'Jennyfit';
-  
-  const notificationOptions = {
-    body: payload.data?.body || payload.notification?.body || 'Tienes una nueva notificación.',
-    icon: './Iconojennyfit.png',
-    badge: './Iconojennyfit.png',
-    image: payload.data?.image || payload.notification?.image, 
-    vibrate: [300, 120, 300, 120, 400],
-    data: { url: './' }
-  };
-
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  console.log('Notificación recibida en segundo plano, el servidor la mostrará.');
 });
 
+// Manejar el clic en la notificación para abrir la app
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
   event.waitUntil(
@@ -46,6 +38,7 @@ self.addEventListener('notificationclick', function(event) {
   );
 });
 
+// Manejador obligatorio para PWA
 self.addEventListener('fetch', function(event) {
-  // Manejador vacío requerido por Chrome
+  // Manejador vacío
 });
