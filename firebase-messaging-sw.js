@@ -1,3 +1,7 @@
+// 🚨 ESTO EVITA EL AVISO DE "ACTUALIZADO EN SEGUNDO PLANO"
+self.addEventListener('install', (event) => { self.skipWaiting(); });
+self.addEventListener('activate', (event) => { event.waitUntil(clients.claim()); });
+
 importScripts('https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js');
 
@@ -19,7 +23,6 @@ messaging.onBackgroundMessage((payload) => {
     body: payload.data?.body || payload.notification?.body || 'Tienes una nueva notificación.',
     icon: './Iconojennyfit.png',
     badge: './Iconojennyfit.png',
-    // 🚨 AQUÍ ESTÁ LA MAGIA PARA LA IMAGEN 🚨
     image: payload.data?.image || payload.notification?.image, 
     vibrate: [300, 120, 300, 120, 400],
     data: { url: './' }
@@ -43,7 +46,6 @@ self.addEventListener('notificationclick', function(event) {
   );
 });
 
-// Manejador obligatorio para PWA
 self.addEventListener('fetch', function(event) {
-  // Manejador vacío
+  // Manejador vacío requerido por Chrome
 });
