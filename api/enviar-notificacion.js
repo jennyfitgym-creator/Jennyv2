@@ -25,11 +25,7 @@ export default async function handler(req, res) {
     const { title, body, image, topic, token, secret } = req.body;
 
     if (secret !== 'JENNYFIT_ADMIN_2026') return res.status(403).json({ success: false, error: 'No autorizado' });
-    
-    // Validamos que venga el título y el cuerpo, y que venga O un topic O un token
-    if (!title || !body || (!topic && !token)) {
-        return res.status(400).json({ success: false, error: 'Faltan campos obligatorios (title, body, y topic o token)' });
-    }
+    if (!title || !body || (!topic && !token)) return res.status(400).json({ success: false, error: 'Faltan campos obligatorios' });
 
     try {
         const message = {
@@ -42,17 +38,19 @@ export default async function handler(req, res) {
                 notification: {
                     title: title,
                     body: body,
-                    icon: './Iconojennyfit.png',
+                    icon: 'https://admin-jennyfit.vercel.app/icono-admin-192.png', // Ícono corregido del admin
                     image: image || '' 
+                },
+                fcm_options: {
+                    link: 'https://admin-jennyfit.vercel.app/' // Abre la app al tocar
                 }
             }
         };
 
-        // 🚨 LÓGICA BILINGÜE 🚨
         if (token) {
-            message.token = token; // Envío directo (Para el Admin)
+            message.token = token; // Envío directo (Admin)
         } else {
-            message.topic = topic; // Envío masivo (Para los Clientes)
+            message.topic = topic; // Envío masivo (Clientes)
         }
 
         const response = await admin.messaging().send(message);
