@@ -34,12 +34,12 @@ export default async function handler(req, res) {
                 body: body,
                 image: image || '' 
             },
-            // 🚨 FORZAR SONIDO EN ANDROID 🚨
+            // 🚨 FORZAR SONIDO EN ANDROID (Corregido) 🚨
             android: {
+                priority: 'high',
                 notification: {
-                    sound: 'default',
-                    vibrate: [300, 100, 300, 100, 400],
-                    priority: 'high'
+                    sound: 'default'
+                    // Se quitó "vibrate" de aquí porque Firebase no lo permite en esta sección
                 }
             },
             webpush: {
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
                     body: body,
                     icon: 'https://admin-jennyfit.vercel.app/icono-admin-192.png',
                     image: image || '',
-                    vibrate: [300, 100, 300, 100, 400]
+                    vibrate: [300, 100, 300, 100, 400] // Aquí sí se permite la vibración
                 },
                 fcm_options: {
                     link: 'https://admin-jennyfit.vercel.app/'
