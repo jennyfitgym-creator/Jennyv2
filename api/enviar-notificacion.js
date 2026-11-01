@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     const { title, body, image, topic, token, secret } = req.body;
 
     if (secret !== 'JENNYFIT_ADMIN_2026') return res.status(403).json({ success: false, error: 'No autorizado' });
-    if (!title || !body || (!topic && !token)) return res.status(400).json({ success: false, error: 'Faltan campos obligatorios' });
+    if (!title || !body || (!topic && !token)) return res.status(400).json({ success: false, error: 'Faltan campos' });
 
     try {
         const message = {
@@ -34,23 +34,32 @@ export default async function handler(req, res) {
                 body: body,
                 image: image || '' 
             },
+            // 🚨 FORZAR SONIDO EN ANDROID 🚨
+            android: {
+                notification: {
+                    sound: 'default',
+                    vibrate: [300, 100, 300, 100, 400],
+                    priority: 'high'
+                }
+            },
             webpush: {
                 notification: {
                     title: title,
                     body: body,
-                    icon: 'https://admin-jennyfit.vercel.app/icono-admin-192.png', // Ícono corregido del admin
-                    image: image || '' 
+                    icon: 'https://admin-jennyfit.vercel.app/icono-admin-192.png',
+                    image: image || '',
+                    vibrate: [300, 100, 300, 100, 400]
                 },
                 fcm_options: {
-                    link: 'https://admin-jennyfit.vercel.app/' // Abre la app al tocar
+                    link: 'https://admin-jennyfit.vercel.app/'
                 }
             }
         };
 
         if (token) {
-            message.token = token; // Envío directo (Admin)
+            message.token = token; 
         } else {
-            message.topic = topic; // Envío masivo (Clientes)
+            message.topic = topic; 
         }
 
         const response = await admin.messaging().send(message);
