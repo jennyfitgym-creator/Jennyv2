@@ -22,33 +22,34 @@ export default async function handler(req, res) {
     if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Método no permitido' });
 
-    const { title, body, image, topic, token, secret } = req.body;
+    const { title, body, image, topic, token, secret, icon } = req.body;
 
     if (secret !== 'JENNYFIT_ADMIN_2026') return res.status(403).json({ success: false, error: 'No autorizado' });
     if (!title || !body || (!topic && !token)) return res.status(400).json({ success: false, error: 'Faltan campos' });
+
+    // 🎯 Ícono: si viene en el request lo usamos, si no, default del cliente.
+    const iconUrl = icon || 'https://jennyv2.vercel.app/Iconojennyfit.png';
 
     try {
         const message = {
             notification: {
                 title: title,
                 body: body,
-                image: image || '' 
+                image: image || ''
             },
-            // 🚨 FORZAR SONIDO EN ANDROID (Corregido) 🚨
             android: {
                 priority: 'high',
                 notification: {
                     sound: 'default'
-                    // Se quitó "vibrate" de aquí porque Firebase no lo permite en esta sección
                 }
             },
             webpush: {
                 notification: {
                     title: title,
                     body: body,
-                    icon: 'https://admin-jennyfit.vercel.app/icono-admin-192.png',
+                    icon: iconUrl,
                     image: image || '',
-                    vibrate: [300, 100, 300, 100, 400] // Aquí sí se permite la vibración
+                    vibrate: [300, 100, 300, 100, 400]
                 },
                 fcm_options: {
                     link: 'https://admin-jennyfit.vercel.app/'
@@ -57,9 +58,9 @@ export default async function handler(req, res) {
         };
 
         if (token) {
-            message.token = token; 
+            message.token = token;
         } else {
-            message.topic = topic; 
+            message.topic = topic;
         }
 
         const response = await admin.messaging().send(message);
