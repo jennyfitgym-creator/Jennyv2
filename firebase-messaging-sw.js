@@ -1,5 +1,5 @@
 // 🚨 FORZAMOS LA ACTUALIZACIÓN INMEDIATA DEL SERVICE WORKER 🚨
-const SW_VERSION = '1.0.1'; // Cambiar este número obliga al teléfono a borrar el viejo
+const SW_VERSION = '1.0.2'; // Subimos la versión para forzar la actualización
 self.addEventListener('install', (event) => { self.skipWaiting(); });
 self.addEventListener('activate', (event) => { event.waitUntil(clients.claim()); });
 
@@ -17,12 +17,25 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// 🚨 NO DIBUJAMOS LA NOTIFICACIÓN MANUALMENTE. 
-// El servidor de Google ya lo hace con el bloque "notification" de arriba.
+// 🚨 AQUÍ DIBUJAMOS LA NOTIFICACIÓN MANUALMENTE 🚨
 messaging.onBackgroundMessage((payload) => {
-  console.log('Notificación recibida en segundo plano. El servidor la muestra.');
+  console.log('[firebase-messaging-sw.js] Mensaje recibido en segundo plano: ', payload);
+  
+  // Si el servidor manda el título en 'notification', lo usamos. Si no, usamos uno por defecto.
+  const notificationTitle = payload.notification?.title || 'Jennyfit';
+  const notificationOptions = {
+    body: payload.notification?.body || 'Tienes una nueva notificación.',
+    icon: 'https://jennyv2.vercel.app/Iconojennyfit.png',
+    badge: 'https://jennyv2.vercel.app/Iconojennyfit.png',
+    vibrate: [200, 100, 200, 100, 200],
+    data: { url: 'https://jennyv2.vercel.app/' }
+  };
+
+  // ESTA LÍNEA ES LA QUE HACE QUE APAREZCA EN LA PANTALLA
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
+// Cuando el usuario toca la notificación, abre la app
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
   event.waitUntil(
