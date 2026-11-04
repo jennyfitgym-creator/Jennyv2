@@ -10,20 +10,13 @@ if (!admin.apps.length) {
 export default async function handler(req, res) {
     const topic = 'recordatorio_agua';
     
-    // CAMBIO CRÍTICO: Usar 'notification' en lugar de 'data' para que el móvil muestre la alerta
+    // Usamos 'data' para que Firebase NO la dibuje automáticamente
     const message = {
-        notification: {
+        data: {
             title: '💧 ¡Hora de hidratarte!',
             body: 'No olvides tomar agua para rendir al máximo en tu entrenamiento.'
         },
-        // Añadimos webpush para forzar al navegador a mostrar la alerta y usar el ícono correcto
         webpush: {
-            notification: {
-                icon: 'https://jennyv2.vercel.app/Iconojennyfit.png',
-                badge: 'https://jennyv2.vercel.app/Iconojennyfit.png',
-                vibrate: [200, 100, 200],
-                requireInteraction: true
-            },
             fcmOptions: {
                 link: 'https://jennyv2.vercel.app/'
             }
