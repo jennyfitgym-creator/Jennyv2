@@ -1,34 +1,29 @@
-const admin = require('firebase-admin');
+const security = require('./_lib/notification-security');
 
-if (!admin.apps.length) {
-    const serviceAccount = JSON.parse(Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf-8'));
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
-    });
-}
+module.exports = async (req, res) => {
+  if (!security.applyCors(req, res)) return res.status(403).json({ success: false, error: 'Origen no permitido.' });
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Método no permitido.' });
 
-export default async function handler(req, res) {
-    const topic = 'recordatorio_agua';
-    
-    // Usamos 'data' para que Firebase NO la dibuje automáticamente
+  try {
+    await security.verifyAppCheck(req);
+    const adminUser = await security.verifyAdmin(req);
+    if (!await security.enforceRateLimit(req, res, 'send-water', 10, 60 * 60 * 1000, adminUser.uid)) return;
+
     const message = {
-        data: {
-            title: '💧 ¡Hora de hidratarte!',
-            body: 'No olvides tomar agua para rendir al máximo en tu entrenamiento.'
-        },
-        webpush: {
-            fcmOptions: {
-                link: 'https://jennyv2.vercel.app/'
-            }
-        },
-        topic: topic
+      data: {
+        title: '💧 ¡Hora de hidratarte!',
+        body: 'No olvides tomar agua para rendir al máximo en tu entrenamiento.'
+      },
+      webpush: {
+        fcmOptions: { link: 'https://jennyv2.vercel.app/' }
+      },
+      topic: 'recordatorio_agua'
     };
 
-    try {
-        const response = await admin.messaging().send(message);
-        return res.status(200).json({ success: true, messageId: response });
-    } catch (error) {
-        console.error('Error al enviar agua:', error);
-        return res.status(500).json({ error: error.message });
-    }
+    const messageId = await security.getAdmin().messaging().send(message);
+    return res.status(200).json({ success: true, messageId });
+  } catch (error) {
+    return security.handleSecurityError(res, error);
+  }
 };
