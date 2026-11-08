@@ -8,12 +8,12 @@ La protección App Check falla de forma cerrada: las rutas responderán 401 hast
 
 ### 1. Firebase App Check
 
-1. En Firebase Console, abre **App Check** y registra la aplicación web JennyFit con el proveedor **reCAPTCHA v3**.
+1. En Firebase Console, abre **App Check** y registra la aplicación web JennyFit con el proveedor **reCAPTCHA Enterprise**.
 2. Autoriza los dominios de producción: `jennyv2.vercel.app` y, si el panel administrativo consume estas rutas, `admin-jennyfit.vercel.app`.
 3. Copia la **site key pública** de reCAPTCHA v3 y colócala en `FIREBASE_APP_CHECK_SITE_KEY` dentro de `index.html`.
 4. Primero prueba en modo de monitorización en Firebase Console. Activa la aplicación de App Check cuando las solicitudes legítimas ya aparezcan correctamente.
 
-La site key es pública. Nunca pongas una secret key de reCAPTCHA en el HTML.
+La clave pública/Key ID se puede incluir en el HTML. Nunca pongas una clave secreta en el HTML. Crea una clave Web basada en puntuación, sin desafío de casilla, y autoriza los dominios de producción.
 
 ### 2. Variables de entorno de Vercel
 
