@@ -1,25 +1,17 @@
 const admin = require('firebase-admin');
+const crypto = require('crypto');
 
-const RATE_LIMITS = new Map();
 const DEFAULT_ORIGIN = 'https://jennyv2.vercel.app';
 
 function getAllowedOrigins() {
-  const configured = (process.env.NOTIFICATION_ALLOWED_ORIGINS || DEFAULT_ORIGIN)
-    .split(',')
-    .map(value => value.trim())
-    .filter(Boolean);
-  return new Set(configured);
+  return new Set((process.env.NOTIFICATION_ALLOWED_ORIGINS || DEFAULT_ORIGIN)
+    .split(',').map(value => value.trim()).filter(Boolean));
 }
 
 function applyCors(req, res) {
   const origin = req.headers.origin;
-  const allowed = getAllowedOrigins();
-
-  if (origin && !allowed.has(origin)) return false;
-
-  if (origin) res.setHeader('Access-Control-Allow-Origin', origin);
-  else res.setHeader('Access-Control-Allow-Origin', DEFAULT_ORIGIN);
-
+  if (origin && !getAllowedOrigins().has(origin)) return false;
+  res.setHeader('Access-Control-Allow-Origin', origin || DEFAULT_ORIGIN);
   res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Firebase-AppCheck');
@@ -29,11 +21,9 @@ function applyCors(req, res) {
 
 function getAdmin() {
   if (admin.apps.length) return admin;
-
   let serviceAccount;
   if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
-    const raw = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
-    serviceAccount = JSON.parse(raw);
+    serviceAccount = JSON.parse(Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8'));
   } else if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
   } else {
@@ -41,10 +31,7 @@ function getAdmin() {
     error.code = 'CONFIG';
     throw error;
   }
-
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  });
+  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
   return admin;
 }
 
@@ -54,24 +41,34 @@ function getClientIp(req) {
   return req.headers['x-real-ip'] || 'unknown';
 }
 
-function enforceRateLimit(req, res, bucket, maxRequests, windowMs) {
+async function enforceRateLimit(req, res, bucket, maxRequests, windowMs) {
+  const db = getAdmin().firestore();
+  const key = crypto.createHash('sha256')
+    .update(bucket + ':' + getClientIp(req))
+    .digest('hex');
+  const ref = db.collection('_security_rate_limits').doc(key);
   const now = Date.now();
-  const key = bucket + ':' + getClientIp(req);
-  const current = RATE_LIMITS.get(key);
 
-  if (!current || current.resetAt <= now) {
-    RATE_LIMITS.set(key, { count: 1, resetAt: now + windowMs });
+  const allowed = await db.runTransaction(async transaction => {
+    const snapshot = await transaction.get(ref);
+    const data = snapshot.exists ? snapshot.data() : {};
+    if (!data.resetAt || data.resetAt.toMillis() <= now) {
+      transaction.set(ref, {
+        count: 1,
+        resetAt: admin.firestore.Timestamp.fromMillis(now + windowMs)
+      });
+      return true;
+    }
+    if (data.count >= maxRequests) return false;
+    transaction.update(ref, { count: data.count + 1 });
     return true;
-  }
+  });
 
-  if (current.count >= maxRequests) {
-    res.setHeader('Retry-After', String(Math.max(1, Math.ceil((current.resetAt - now) / 1000))));
+  if (!allowed) {
+    res.setHeader('Retry-After', String(Math.ceil(windowMs / 1000)));
     res.status(429).json({ success: false, error: 'Demasiadas solicitudes. Inténtalo más tarde.' });
-    return false;
   }
-
-  current.count += 1;
-  return true;
+  return allowed;
 }
 
 async function verifyAppCheck(req) {
@@ -85,38 +82,31 @@ async function verifyAppCheck(req) {
 }
 
 async function verifyAdmin(req) {
-  const authorization = req.headers.authorization || '';
-  const match = authorization.match(/^Bearer\s+(.+)$/i);
+  const match = (req.headers.authorization || '').match(/^Bearer\\s+(.+)$/i);
   if (!match) {
     const error = new Error('Authentication required.');
     error.code = 'AUTH_REQUIRED';
     throw error;
   }
-
   const configuredUids = (process.env.NOTIFICATION_ADMIN_UIDS || '')
-    .split(',')
-    .map(value => value.trim())
-    .filter(Boolean);
-
+    .split(',').map(value => value.trim()).filter(Boolean);
   if (!configuredUids.length) {
     const error = new Error('Notification administrators are not configured.');
     error.code = 'CONFIG';
     throw error;
   }
-
   const decoded = await getAdmin().auth().verifyIdToken(match[1]);
   if (!configuredUids.includes(decoded.uid)) {
     const error = new Error('Administrator access required.');
     error.code = 'FORBIDDEN';
     throw error;
   }
-
   return decoded;
 }
 
 function validFcmToken(token) {
   return typeof token === 'string' && token.length >= 20 && token.length <= 4096 &&
-    /^[A-Za-z0-9_:\-]+$/.test(token);
+    /^[A-Za-z0-9_:\\-]+$/.test(token);
 }
 
 function validTopic(topic) {
@@ -139,12 +129,6 @@ function handleSecurityError(res, error) {
 }
 
 module.exports = {
-  getAdmin,
-  applyCors,
-  enforceRateLimit,
-  verifyAppCheck,
-  verifyAdmin,
-  validFcmToken,
-  validTopic,
-  handleSecurityError
+  getAdmin, applyCors, enforceRateLimit, verifyAppCheck, verifyAdmin,
+  validFcmToken, validTopic, handleSecurityError
 };
