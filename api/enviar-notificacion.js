@@ -7,10 +7,44 @@ module.exports = async (req, res) => {
 
   try {
     await security.verifyAppCheck(req);
+    const payload = req.body || {};
+
+    // Registro: el servidor elige el destinatario; el navegador nunca puede aportar
+    // un token FCM de administrador ni una clave secreta.
+    if (payload.event === 'new_registration') {
+      if (!await security.enforceRateLimit(req, res, 'new-registration', 5, 60 * 60 * 1000)) return;
+      const adminToken = process.env.JENNYFIT_ADMIN_FCM_TOKEN;
+      if (!security.validFcmToken(adminToken)) {
+        console.error('[notifications] JENNYFIT_ADMIN_FCM_TOKEN is missing or invalid.');
+        return res.status(503).json({ success: false, error: 'Aviso administrativo no configurado.' });
+      }
+
+      const name = typeof payload.name === 'string'
+        ? payload.name.replace(/[<>\\r\\n]/g, '').trim().slice(0, 80)
+        : '';
+      if (!name) return res.status(400).json({ success: false, error: 'Nombre no válido.' });
+
+      const referred = payload.referred === true;
+      const message = {
+        token: adminToken,
+        notification: {
+          title: '🔔 ¡Nuevo Cliente Registrado!',
+          body: referred ? name + ' acaba de registrarse con un referido.' : name + ' acaba de registrarse.'
+        },
+        android: { priority: 'high', notification: { sound: 'default' } },
+        webpush: {
+          notification: { icon: 'https://jennyv2.vercel.app/Iconojennyfit.png' },
+          fcmOptions: { link: 'https://admin-jennyfit.vercel.app/' }
+        }
+      };
+      const messageId = await security.getAdmin().messaging().send(message);
+      return res.status(200).json({ success: true, messageId });
+    }
+
     await security.verifyAdmin(req);
     if (!await security.enforceRateLimit(req, res, 'send-notification', 20, 60 * 60 * 1000)) return;
 
-    const { title, body, image, topic, token, icon } = req.body || {};
+    const { title, body, image, topic, token, icon } = payload;
     if (typeof title !== 'string' || !title.trim() || title.length > 120 ||
         typeof body !== 'string' || !body.trim() || body.length > 1000) {
       return res.status(400).json({ success: false, error: 'Título o mensaje no válido.' });
@@ -25,7 +59,7 @@ module.exports = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Tema no permitido.' });
     }
 
-    const validImage = value => typeof value === 'string' && /^https:\/\//i.test(value) && value.length <= 2048;
+    const validImage = value => typeof value === 'string' && /^https:\\/\\//i.test(value) && value.length <= 2048;
     const iconUrl = validImage(icon) ? icon : 'https://jennyv2.vercel.app/Iconojennyfit.png';
     const message = {
       notification: {
