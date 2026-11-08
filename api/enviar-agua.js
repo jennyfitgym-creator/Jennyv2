@@ -7,8 +7,8 @@ module.exports = async (req, res) => {
 
   try {
     await security.verifyAppCheck(req);
-    await security.verifyAdmin(req);
-    if (!await security.enforceRateLimit(req, res, 'send-water', 10, 60 * 60 * 1000)) return;
+    const adminUser = await security.verifyAdmin(req);
+    if (!await security.enforceRateLimit(req, res, 'send-water', 10, 60 * 60 * 1000, adminUser.uid)) return;
 
     const message = {
       data: {
