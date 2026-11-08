@@ -8777,16 +8777,23 @@ async function guardarRegistroInicial() {
 
   // 🚨 AVISAR AL ADMIN 🚨
   try {
-    const appCheckHeaders = await obtenerCabeceraAppCheck();
-    fetch('https://jennyv2.vercel.app/api/enviar-notificacion', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...appCheckHeaders },
-      body: JSON.stringify({
-        event: 'new_registration',
-        name: nombre,
-        referred: Boolean(referidoValido)
-      })
-    }).catch(err => console.log('Error al avisar al admin:', err));
+    if (usuarioFirebaseActual) {
+      const appCheckHeaders = await obtenerCabeceraAppCheck();
+      const authToken = await usuarioFirebaseActual.getIdToken();
+      fetch('https://jennyv2.vercel.app/api/enviar-notificacion', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + authToken,
+          ...appCheckHeaders
+        },
+        body: JSON.stringify({
+          event: 'new_registration',
+          name: nombre,
+          referred: Boolean(referidoValido)
+        })
+      }).catch(err => console.log('Error al avisar al admin:', err));
+    }
   } catch(e) {}
 
   setTimeout(() => { verificarLicenciaMembresia(); }, 1500);
@@ -11560,6 +11567,20 @@ async function inicializarFirebaseMessagingJennyfit() {
   }
 }
 
+async function enviarSolicitudSuscripcionFCM(token, topic, action) {
+  const appCheckHeaders = await obtenerCabeceraAppCheck();
+  const response = await fetch('/api/suscribir', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...appCheckHeaders },
+    body: JSON.stringify({ token, topic, action })
+  });
+  if (!response.ok) {
+    const result = await response.json().catch(() => ({}));
+    throw new Error(result.error || 'No se pudo actualizar la suscripción de notificaciones.');
+  }
+  return response.json();
+}
+
 async function obtenerTokenFCMSuscribir() {
   let swReg = null;
   if ('serviceWorker' in navigator) {
@@ -11641,7 +11662,7 @@ async function desuscribirRecordatoriosAgua() {
     if (btn) { btn.disabled = true; btn.innerText = "⏳ Cancelando..."; }
     const tokenGuardado = storageSeguro.getItem('jennyfit_fcm_token') || '';
     if (tokenGuardado) {
-      try { await fetch('/api/suscribir', { method: 'POST', headers: { 'Content-Type': 'application/json', ...await obtenerCabeceraAppCheck() }, body: JSON.stringify({ token: tokenGuardado, topic: 'recordatorio_agua', action: 'unsubscribe' }) }); } catch (e) {}
+      try { await enviarSolicitudSuscripcionFCM(tokenGuardado, 'recordatorio_agua', 'unsubscribe'); } catch (e) {}
     }
     storageSeguro.setItem('jennyfit_notif_active', 'false');
     const noticiasActivas = storageSeguro.getItem('jennyfit_notif_news_active') === 'true';
@@ -11672,7 +11693,7 @@ async function toggleRecordatoriosAgua() {
     let token = await obtenerTokenFCMSuscribir(); 
     if (!token) throw new Error("No se pudo generar Token."); 
     storageSeguro.setItem('jennyfit_fcm_token', token);
-    await fetch('/api/suscribir', { method: 'POST', headers: { 'Content-Type': 'application/json', ...await obtenerCabeceraAppCheck() }, body: JSON.stringify({ token, topic: 'recordatorio_agua', action: 'subscribe' }) });
+    await enviarSolicitudSuscripcionFCM(token, 'recordatorio_agua', 'subscribe');
     storageSeguro.setItem('jennyfit_notif_active', 'true'); reproducirSonidoAlarma('suave'); mostrarToast("🔔 Recordatorio de agua activado.", 'cyan', '💧');
   } catch (err) { mostrarToast("❌ Error: " + (err.message || err), 'danger', '❌'); } finally { if (btn) btn.disabled = false; actualizarEstadoUIRecordatoriosAgua(); }
 }
@@ -11692,7 +11713,7 @@ async function desuscribirNoticiasGenerales() {
   try {
     if (btn) { btn.disabled = true; btn.innerText = "⏳ Cancelando..."; }
     const tokenGuardado = storageSeguro.getItem('jennyfit_fcm_token') || '';
-    if (tokenGuardado) { try { await fetch('/api/suscribir', { method: 'POST', headers: { 'Content-Type': 'application/json', ...await obtenerCabeceraAppCheck() }, body: JSON.stringify({ token: tokenGuardado, topic: 'noticias_jennyfit', action: 'unsubscribe' }) }); } catch (e) {} }
+    if (tokenGuardado) { try { await enviarSolicitudSuscripcionFCM(tokenGuardado, 'noticias_jennyfit', 'unsubscribe'); } catch (e) {} }
     storageSeguro.setItem('jennyfit_notif_news_active', 'false');
     const aguaActiva = storageSeguro.getItem('jennyfit_notif_active') === 'true';
     if (!aguaActiva) { try { const fcmObj = await inicializarFirebaseMessagingJennyfit(); if (fcmObj && fcmObj.deleteToken && fcmObj.messaging) await fcmObj.deleteToken(fcmObj.messaging); } catch (e) {} storageSeguro.removeItem('jennyfit_fcm_token'); }
@@ -11719,7 +11740,7 @@ async function toggleNoticiasGenerales() {
     let token = await obtenerTokenFCMSuscribir(); 
     if (!token) throw new Error("No se pudo generar Token."); 
     storageSeguro.setItem('jennyfit_fcm_token', token);
-    await fetch('/api/suscribir', { method: 'POST', headers: { 'Content-Type': 'application/json', ...await obtenerCabeceraAppCheck() }, body: JSON.stringify({ token, topic: 'noticias_jennyfit', action: 'subscribe' }) });
+    await enviarSolicitudSuscripcionFCM(token, 'noticias_jennyfit', 'subscribe');
     storageSeguro.setItem('jennyfit_notif_news_active', 'true'); reproducirSonidoAlarma('suave'); mostrarToast("📢 Noticias activadas.", 'normal', '📢');
   } catch (err) { mostrarToast("❌ Error: " + (err.message || err), 'danger', '❌'); } finally { if (btn) btn.disabled = false; actualizarEstadoUINoticiasGenerales(); }
 }
