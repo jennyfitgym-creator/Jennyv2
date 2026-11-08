@@ -1,72 +1,57 @@
-import admin from 'firebase-admin';
+const security = require('./_lib/notification-security');
 
-if (!admin.apps.length) {
-    try {
-        let serviceAccount;
-        if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-            serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-        }
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount)
-        });
-    } catch (error) {
-        console.error('Error inicializando Firebase Admin:', error);
+module.exports = async (req, res) => {
+  if (!security.applyCors(req, res)) return res.status(403).json({ success: false, error: 'Origen no permitido.' });
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Método no permitido.' });
+
+  try {
+    await security.verifyAppCheck(req);
+    await security.verifyAdmin(req);
+    if (!await security.enforceRateLimit(req, res, 'send-notification', 20, 60 * 60 * 1000)) return;
+
+    const { title, body, image, topic, token, icon } = req.body || {};
+    if (typeof title !== 'string' || !title.trim() || title.length > 120 ||
+        typeof body !== 'string' || !body.trim() || body.length > 1000) {
+      return res.status(400).json({ success: false, error: 'Título o mensaje no válido.' });
     }
-}
-
-export default async function handler(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
-    if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Método no permitido' });
-
-    const { title, body, image, topic, token, secret, icon } = req.body;
-
-    if (secret !== 'JENNYFIT_ADMIN_2026') return res.status(403).json({ success: false, error: 'No autorizado' });
-    if (!title || !body || (!topic && !token)) return res.status(400).json({ success: false, error: 'Faltan campos' });
-
-    // 🎯 Ícono: si viene en el request lo usamos, si no, default del cliente.
-    const iconUrl = icon || 'https://jennyv2.vercel.app/Iconojennyfit.png';
-
-    try {
-        const message = {
-            notification: {
-                title: title,
-                body: body,
-                image: image || ''
-            },
-            android: {
-                priority: 'high',
-                notification: {
-                    sound: 'default'
-                }
-            },
-            webpush: {
-                notification: {
-                    title: title,
-                    body: body,
-                    icon: iconUrl,
-                    image: image || '',
-                    vibrate: [300, 100, 300, 100, 400]
-                },
-                fcm_options: {
-                    link: 'https://admin-jennyfit.vercel.app/'
-                }
-            }
-        };
-
-        if (token) {
-            message.token = token;
-        } else {
-            message.topic = topic;
-        }
-
-        const response = await admin.messaging().send(message);
-        return res.status(200).json({ success: true, messageId: response });
-    } catch (error) {
-        console.error('Error enviando notificación:', error);
-        return res.status(500).json({ success: false, error: error.message });
+    if ((topic && token) || (!topic && !token)) {
+      return res.status(400).json({ success: false, error: 'Indica un único destino.' });
     }
-}
+    if (token && !security.validFcmToken(token)) {
+      return res.status(400).json({ success: false, error: 'Token FCM no válido.' });
+    }
+    if (topic && !['noticias_jennyfit', 'recordatorio_agua'].includes(topic)) {
+      return res.status(400).json({ success: false, error: 'Tema no permitido.' });
+    }
+
+    const validImage = value => typeof value === 'string' && /^https:\/\//i.test(value) && value.length <= 2048;
+    const iconUrl = validImage(icon) ? icon : 'https://jennyv2.vercel.app/Iconojennyfit.png';
+    const message = {
+      notification: {
+        title: title.trim(),
+        body: body.trim(),
+        ...(validImage(image) ? { image } : {})
+      },
+      android: { priority: 'high', notification: { sound: 'default' } },
+      webpush: {
+        notification: {
+          title: title.trim(),
+          body: body.trim(),
+          icon: iconUrl,
+          ...(validImage(image) ? { image } : {}),
+          vibrate: [300, 100, 300, 100, 400]
+        },
+        fcmOptions: { link: 'https://admin-jennyfit.vercel.app/' }
+      }
+    };
+
+    if (token) message.token = token;
+    else message.topic = topic;
+
+    const messageId = await security.getAdmin().messaging().send(message);
+    return res.status(200).json({ success: true, messageId });
+  } catch (error) {
+    return security.handleSecurityError(res, error);
+  }
+};
