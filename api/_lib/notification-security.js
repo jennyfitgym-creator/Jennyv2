@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const DEFAULT_ORIGIN = 'https://jennyv2.vercel.app';
 
 function getAllowedOrigins() {
-  return new Set((process.env.NOTIFICATION_ALLOWED_ORIGINS || DEFAULT_ORIGIN)
+  return new Set((process.env.NOTIFICATION_ALLOWED_ORIGINS || (DEFAULT_ORIGIN + ',https://admin-jennyfit.vercel.app'))
     .split(',').map(value => value.trim()).filter(Boolean));
 }
 
