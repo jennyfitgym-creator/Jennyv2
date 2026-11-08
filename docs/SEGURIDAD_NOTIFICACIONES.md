@@ -34,7 +34,7 @@ Se recomienda configurar TTL sobre el campo `resetAt` para limpiar automáticame
 
 ### 4. Rotación de la credencial antigua
 
-La clave de autorización que antes estaba incrustada en el código fuente público debe considerarse comprometida. Rótala y no la reutilices. El nuevo código ya no la acepta ni la envía desde el navegador.
+La clave de autorización que antes estaba incrustada en el código fuente público debe considerarse comprometida y dejar de utilizarse. El nuevo código ya no la acepta ni la envía desde el navegador; no crees otra clave compartida para sustituirla.
 
 ### 5. Qué protege cada ruta
 
