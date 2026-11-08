@@ -12,7 +12,8 @@ module.exports = async (req, res) => {
     // Registro: el servidor elige el destinatario; el navegador nunca puede aportar
     // un token FCM de administrador ni una clave secreta.
     if (payload.event === 'new_registration') {
-      if (!await security.enforceRateLimit(req, res, 'new-registration', 5, 60 * 60 * 1000)) return;
+      const user = await security.verifyUser(req);
+      if (!await security.enforceRateLimit(req, res, 'new-registration', 1, 60 * 60 * 1000, user.uid)) return;
       const adminToken = process.env.JENNYFIT_ADMIN_FCM_TOKEN;
       if (!security.validFcmToken(adminToken)) {
         console.error('[notifications] JENNYFIT_ADMIN_FCM_TOKEN is missing or invalid.');
