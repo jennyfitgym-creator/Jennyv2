@@ -36,9 +36,11 @@ function getAdmin() {
 }
 
 function getClientIp(req) {
+  const realIp = req.headers['x-real-ip'];
+  if (typeof realIp === 'string' && realIp) return realIp;
   const forwarded = req.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string' && forwarded.length) return forwarded.split(',')[0].trim();
-  return req.headers['x-real-ip'] || 'unknown';
+  if (typeof forwarded === 'string' && forwarded.length) return forwarded.split(',').pop().trim();
+  return 'unknown';
 }
 
 async function enforceRateLimit(req, res, bucket, maxRequests, windowMs, identity) {
@@ -116,7 +118,7 @@ async function verifyAdmin(req) {
 
 function validFcmToken(token) {
   return typeof token === 'string' && token.length >= 20 && token.length <= 4096 &&
-    /^[A-Za-z0-9_:-]+$/.test(token);
+    !/[\\s\\x00-\\x1F\\x7F]/.test(token);
 }
 
 function validTopic(topic) {
