@@ -42,8 +42,8 @@ module.exports = async (req, res) => {
       return res.status(200).json({ success: true, messageId });
     }
 
-    await security.verifyAdmin(req);
-    if (!await security.enforceRateLimit(req, res, 'send-notification', 20, 60 * 60 * 1000)) return;
+    const adminUser = await security.verifyAdmin(req);
+    if (!await security.enforceRateLimit(req, res, 'send-notification', 20, 60 * 60 * 1000, adminUser.uid)) return;
 
     const { title, body, image, topic, token, icon } = payload;
     if (typeof title !== 'string' || !title.trim() || title.length > 120 ||
