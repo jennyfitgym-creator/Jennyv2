@@ -6055,7 +6055,7 @@ const FIREBASE_MOD = {
 let _firebaseMods = null;
 let firebaseAppCheckInstance = null;
 
-// Configurar en Firebase Console: App Check > Web app > reCAPTCHA v3.
+// Configurar en Firebase Console: App Check > Web app > Fraud Defense / reCAPTCHA Enterprise.
 // Esta clave del sitio es pública; no es una clave secreta.
 const FIREBASE_APP_CHECK_SITE_KEY = '';
 
@@ -6069,7 +6069,7 @@ async function obtenerCabeceraAppCheck() {
     const apps = appMod.getApps();
     const app = apps.length ? apps[0] : appMod.initializeApp(FIREBASE_CONFIG_JENNYFIT);
     firebaseAppCheckInstance = appCheckMod.initializeAppCheck(app, {
-      provider: new appCheckMod.ReCaptchaV3Provider(FIREBASE_APP_CHECK_SITE_KEY),
+      provider: new appCheckMod.ReCaptchaEnterpriseProvider(FIREBASE_APP_CHECK_SITE_KEY),
       isTokenAutoRefreshEnabled: true
     });
   }
