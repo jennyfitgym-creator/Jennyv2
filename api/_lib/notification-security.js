@@ -82,7 +82,7 @@ async function verifyAppCheck(req) {
 }
 
 async function verifyUser(req) {
-  const match = (req.headers.authorization || '').match(/^Bearer\\s+(.+)$/i);
+  const match = (req.headers.authorization || '').match(/^Bearer\s+(.+)$/i);
   if (!match) {
     const error = new Error('Authentication required.');
     error.code = 'AUTH_REQUIRED';
@@ -92,7 +92,7 @@ async function verifyUser(req) {
 }
 
 async function verifyAdmin(req) {
-  const match = (req.headers.authorization || '').match(/^Bearer\\s+(.+)$/i);
+  const match = (req.headers.authorization || '').match(/^Bearer\s+(.+)$/i);
   if (!match) {
     const error = new Error('Authentication required.');
     error.code = 'AUTH_REQUIRED';
@@ -116,7 +116,7 @@ async function verifyAdmin(req) {
 
 function validFcmToken(token) {
   return typeof token === 'string' && token.length >= 20 && token.length <= 4096 &&
-    /^[A-Za-z0-9_:\\-]+$/.test(token);
+    /^[A-Za-z0-9_:-]+$/.test(token);
 }
 
 function validTopic(topic) {
