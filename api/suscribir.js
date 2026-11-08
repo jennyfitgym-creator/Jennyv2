@@ -7,14 +7,14 @@ module.exports = async (req, res) => {
 
   try {
     await security.verifyAppCheck(req);
-    if (!await security.enforceRateLimit(req, res, 'subscribe', 30, 60 * 60 * 1000)) return;
-
     const { token, topic, action = 'subscribe' } = req.body || {};
     const allowedTopics = new Set(['recordatorio_agua', 'noticias_jennyfit']);
 
     if (!security.validFcmToken(token)) return res.status(400).json({ ok: false, error: 'Token FCM no válido.' });
     if (!allowedTopics.has(topic)) return res.status(400).json({ ok: false, error: 'Tema no permitido.' });
     if (action !== 'subscribe' && action !== 'unsubscribe') return res.status(400).json({ ok: false, error: 'Acción no válida.' });
+    if (!await security.enforceRateLimit(req, res, 'subscribe-ip', 30, 60 * 60 * 1000)) return;
+    if (!await security.enforceRateLimit(req, res, 'subscribe-token', 10, 60 * 60 * 1000, token)) return;
 
     const messaging = security.getAdmin().messaging();
     if (action === 'unsubscribe') {
