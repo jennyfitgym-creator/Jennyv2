@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
       }
 
       const name = typeof payload.name === 'string'
-        ? payload.name.replace(/[<>\\r\\n]/g, '').trim().slice(0, 80)
+        ? payload.name.replace(/[<>\r\n]/g, '').trim().slice(0, 80)
         : '';
       if (!name) return res.status(400).json({ success: false, error: 'Nombre no válido.' });
 
@@ -60,7 +60,7 @@ module.exports = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Tema no permitido.' });
     }
 
-    const validImage = value => typeof value === 'string' && /^https:\\/\\//i.test(value) && value.length <= 2048;
+    const validImage = value => typeof value === 'string' && value.startsWith('https://') && value.length <= 2048;
     const iconUrl = validImage(icon) ? icon : 'https://jennyv2.vercel.app/Iconojennyfit.png';
     const message = {
       notification: {
