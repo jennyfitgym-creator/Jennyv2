@@ -41,10 +41,10 @@ function getClientIp(req) {
   return req.headers['x-real-ip'] || 'unknown';
 }
 
-async function enforceRateLimit(req, res, bucket, maxRequests, windowMs) {
+async function enforceRateLimit(req, res, bucket, maxRequests, windowMs, identity) {
   const db = getAdmin().firestore();
   const key = crypto.createHash('sha256')
-    .update(bucket + ':' + getClientIp(req))
+    .update(bucket + ':' + (identity || getClientIp(req)))
     .digest('hex');
   const ref = db.collection('_security_rate_limits').doc(key);
   const now = Date.now();
@@ -79,6 +79,16 @@ async function verifyAppCheck(req) {
     throw error;
   }
   await getAdmin().appCheck().verifyToken(token);
+}
+
+async function verifyUser(req) {
+  const match = (req.headers.authorization || '').match(/^Bearer\\s+(.+)$/i);
+  if (!match) {
+    const error = new Error('Authentication required.');
+    error.code = 'AUTH_REQUIRED';
+    throw error;
+  }
+  return getAdmin().auth().verifyIdToken(match[1]);
 }
 
 async function verifyAdmin(req) {
@@ -129,6 +139,6 @@ function handleSecurityError(res, error) {
 }
 
 module.exports = {
-  getAdmin, applyCors, enforceRateLimit, verifyAppCheck, verifyAdmin,
+  getAdmin, applyCors, enforceRateLimit, verifyAppCheck, verifyUser, verifyAdmin,
   validFcmToken, validTopic, handleSecurityError
 };
